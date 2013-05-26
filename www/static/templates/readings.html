@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block body %}
+<table>
+<tr>
+  <th>Time</th>
+  <th>Temperature</th>
+</tr>
+{% for result in readings %}
+<tr class="{{ loop.cycle('odd', 'even') }}">
+  <td>{{ result[0] }}</td>
+  <td>{{ result[1] }}&deg;C</td>
+</tr>
+{% endfor %}
+</table>
+{% endblock %}

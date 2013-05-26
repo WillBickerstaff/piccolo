@@ -1,0 +1,29 @@
+table, tr, td{
+  border: 1px solid black;
+  border-collapse: collapse;
+  padding: 0.2em 0.5em;
+}
+
+.ui-widget {
+    font-family: Verdana,Arial,sans-serif;
+    font-size: 0.7em;
+}
+
+#datecontrol {
+
+}
+
+#plot{
+    height: 90%;
+}
+
+#plot, #footer {
+    width: 98%;
+    margin-left:auto;
+    margin-right:auto;
+}
+
+#gpl {
+    float: right;
+    margin-top: 1.3em;
+}

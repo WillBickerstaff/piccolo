@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block scripts %}
+<!--[if lt IE 9]><script language="javascript" type="text/javascript" src="/js/jqplot/excanvas.min.js"></script><![endif]-->
+<script language="javascript" type="text/javascript" src="/js/jqplot/jquery.min.js"></script>
+<script language="javascript" type="text/javascript" src="/js/jqplot/jquery.jqplot.min.js"></script>
+<script type="text/javascript" src="/js/jqplot/plugins/jqplot.dateAxisRenderer.min.js"></script>
+<script type="text/javascript" src="/js/jqplot/plugins/jqplot.cursor.min.js"></script>
+<script type="text/javascript" src="/js/jqplot/plugins/jqplot.highlighter.min.js"></script>
+
+<script  type="text/javascript">
+$(document).ready(function(){
+  var line1= {{ readings }}
+  var plot1 = $.jqplot('chartdiv', [line1], {
+      title:'Indoor Temperature {{ plotdate }}',
+      axes:{
+        xaxis:{
+          renderer:$.jqplot.DateAxisRenderer},
+        yaxis:{
+          tickOptions:{
+            formatString:'%.2f'
+            }
+        }
+      },
+      series:[{linewidth: 1, markerOptions:{size:0}}],
+      highlighter: {
+        show: true,
+        sizeAdjust: 20.5
+      },
+      cursor: {
+        show: true,
+        zoom: true
+      }
+  });
+});
+</script>
+{% endblock %}
+
+{% block body %}
+<div id="chartdiv" style="height:90%;width:95%; "></div>
+{% endblock %}
