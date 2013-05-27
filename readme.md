@@ -6,12 +6,14 @@ ds18b20 1 wire temperature sensors and displays the results in a jqplot graph.
 
 Application is tested with:
 
+* sqlite3
 * Nginx
 * Gunicorn
 * Flask
 * Jinja2
 * Jquery
 * Jqplot
+
 
     Pi.M.M.S is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
