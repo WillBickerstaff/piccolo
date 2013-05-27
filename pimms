@@ -31,8 +31,7 @@ def check_db(db):
 
 def ctrlc_handler(processes):
     for process in processes:
-        process.send_signal(SIGTERM)
-	
+        process.kill()
     sys.exit(1)
 
 if __name__=='__main__':
@@ -46,8 +45,5 @@ if __name__=='__main__':
         processes.append(subprocess.Popen(['gunicorn', 'www.web:app',
                                            '--debug', '-b',
                                            'localhost:9001']))
-        for p in processes:
-	    print p.pid
-        print processes
     except KeyboardInterrupt:
         ctrlc_handler(processes)

@@ -1,4 +1,4 @@
-import os, json
+import os, json, time
 import sqlite3 as sqlite
 from sensors.ds18b20 import Sensor as DS18B20
 from sensors.reading import Reading
@@ -61,10 +61,11 @@ if __name__ == '__main__':
     
     while True:
         if len(sensors) > 0:
-            temps.append(get_temps(sensors))
             t = now()
-            if t >= lastlog + log_int:
+            temps.append(get_temps(sensors))
+            if t >= lastlog + float(log_int):
                 sensors = get_sensors(sensors) # Look for new / missing sensors
-                lastlog = t
+                lastlog = now()
                 log_avg(temps, t, os.environ['PIMMS_DB'])
                 temps = []
+            time.sleep(0.1)
