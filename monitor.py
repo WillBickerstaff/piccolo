@@ -52,21 +52,18 @@ def log_avg(temps, logtime, db):
         cur.execute("INSERT INTO readings VALUES({timestamp}, {temp})".format(
                 timestamp = logtime, temp = avgtemp))
 
-def sensor_wait(sensors):
-    ''' Calculate the full read time for the wire '''
-    return sum(s.update_interval for s in sensors)
-
 if __name__ == '__main__':
     print 'Monitor Running.'
     log_int = 60 # Log Interval
     lastlog = 0  # Time we last logged to the db
     sensors = get_sensors() # set of available sensors
     temps = [] # current loop temperatures
+    
     while True:
         if len(sensors) > 0:
             temps.append(get_temps(sensors))
             t = now()
-            if t >= (lastlog + log_int) - (sensor_wait(sensors)):
+            if t >= lastlog + log_int:
                 sensors = get_sensors(sensors) # Look for new / missing sensors
                 lastlog = t
                 log_avg(temps, t, os.environ['PIMMS_DB'])

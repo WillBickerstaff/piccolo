@@ -11,8 +11,6 @@ parser.add_option('-d', '--db', default='templog.db', dest='db',
 parser.add_option('-i', '--int', default=60, dest='log_int',
 			help='Log interval')
 
-subprocesses = []
-
 def db_error(db):
     print "ERROR: Can not open or create database %s"%db
     sys.exit(1)
@@ -31,16 +29,25 @@ def check_db(db):
     else:
         db_error(db)
 
-def ctrlc_handler(signal, frame):
-    for process in subprocesses:
-        process.kill()
+def ctrlc_handler(processes):
+    for process in processes:
+        process.send_signal(SIGTERM)
+	
+    sys.exit(1)
 
 if __name__=='__main__':
-    (options, args) = parser.parse_args()
-    check_db(options.db)
-    print 'Starting Monitor...'
-    subprocesses.append(subprocess.Popen(['python', 'monitor.py']))
-    print 'Starting Gunicorn'
-    subprocesses.append(subprocess.Popen(['gunicorn', 'www.web:app',
-                                          '--debug', '-b',
-                                          'localhost:9001']))
+    processes = []
+    try:
+        (options, args) = parser.parse_args()
+        check_db(options.db)
+        print 'Starting Monitor...'
+        processes.append(subprocess.Popen(['python', 'monitor.py']))
+        print 'Starting Gunicorn'
+        processes.append(subprocess.Popen(['gunicorn', 'www.web:app',
+                                           '--debug', '-b',
+                                           'localhost:9001']))
+        for p in processes:
+	    print p.pid
+        print processes
+    except KeyboardInterrupt:
+        ctrlc_handler(processes)
