@@ -10,7 +10,7 @@
 <script type="text/javascript" src="/js/jqplot/plugins/jqplot.dateAxisRenderer.min.js"></script>
 <script type="text/javascript" src="/js/jqplot/plugins/jqplot.cursor.min.js"></script>
 <script type="text/javascript" src="/js/jqplot/plugins/jqplot.highlighter.min.js"></script>
-
+<script type="text/javascript" src="/js/jqplot/plugins/jqplot.canvasAxisTickRenderer.min.js"></script>
 
   <script>
   $(function() {
@@ -30,7 +30,14 @@ $(document).ready(function(){
       title:'Indoor Temperature {{ plotdate }}',
       axes:{
         xaxis:{
-          renderer:$.jqplot.DateAxisRenderer},
+          renderer:$.jqplot.DateAxisRenderer,
+          min: '{{ day.start }}',
+          max: '{{ day.end }}',
+          tickInterval: '1 hour',
+          tickOptions:{
+            formatString:'%H:%M'
+          }
+        },
         yaxis:{
           tickOptions:{
             formatString:'%.2f'
@@ -55,6 +62,7 @@ $(document).ready(function(){
   });
 });
 </script>
+
 
 {% endblock %}
 {% block body %}

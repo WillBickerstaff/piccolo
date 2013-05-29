@@ -104,7 +104,8 @@ def index():
     plotdate = [int(x) for x in plotdate.split('-')]
     datestr = join_date('/', plotdate[2], plotdate[1], plotdate[0])
     temps = []
-    res = get_readings(make_day(plotdate[0], plotdate[1], plotdate[2]))
+    day = make_day(plotdate[0], plotdate[1], plotdate[2])
+    res = get_readings(day)
     for r in res:
         temps.append([str(datetime.datetime.utcfromtimestamp(r[0])).split('.')[0], float(r[1])/1000])
 
@@ -113,7 +114,7 @@ def index():
     template = env.get_template('default.html')
     return template.render(start = 0 - deltas.start.days,
                            end = deltas.end.days,
-                           readings=temps, plotdate=datestr )
+                           readings=temps, plotdate=datestr, day=day )
 
 if __name__ == '__main__':
     app.run()
