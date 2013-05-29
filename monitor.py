@@ -1,4 +1,4 @@
-import os, json, time
+import os
 import sqlite3 as sqlite
 from sensors.ds18b20 import Sensor as DS18B20
 from sensors.reading import Reading
@@ -12,7 +12,6 @@ def get_sensors(old_sensors=set()):
     '''
 
     new_sensors = [x for x in os.listdir("/sys/bus/w1/devices") if 'w1' not in x]
-    new_sensors.sort(key = lambda x: x)
     return compare_sensors(set(new_sensors), old_sensors)
 
 def compare_sensors(new, old):
@@ -23,10 +22,11 @@ def compare_sensors(new, old):
     new sensor objects
     '''
 
-    active = set(s for s in old if s.device in new)
+    active = set([s for s in old if s.device in new])
     active_ids = [s.device for s in active]
-    new_sen = set(DS18B20(s) for s in new if s not in active)
+    new_sen = set([DS18B20(s) for s in new if s not in active_ids])
     all_sen = active | new_sen
+    assert len(all_sen) == len(new)
     
     return all_sen
 
@@ -34,15 +34,11 @@ def get_temps(sensors):
     ''' Retrieve the temperature values from all sensors '''
     actvals = []
     for s in sensors:
-        s.read()
-
+        v = s.val # retrieving val calls read and updates the sensor
         if s.isvalid == Reading.VALID:
-            # retrieve val, not temperature as we want to store it in the db as
-            # an int
-            actvals.append(s.val) 
+            actvals.append(v) 
     assert len(actvals) > 0
     return sum(actvals) / len(actvals)
-
 
 def log_avg(temps, logtime, db):
     ''' log average temperature to the database '''
@@ -52,20 +48,22 @@ def log_avg(temps, logtime, db):
         cur.execute("INSERT INTO readings VALUES({timestamp}, {temp})".format(
                 timestamp = logtime, temp = avgtemp))
 
-if __name__ == '__main__':
+def main_func():
     print 'Monitor Running.'
     log_int = 60 # Log Interval
     lastlog = 0  # Time we last logged to the db
-    sensors = get_sensors() # set of available sensors
+    sensors = []
     temps = [] # current loop temperatures
-    
     while True:
-        if len(sensors) > 0:
-            t = now()
+        t = now()
+        if t >= lastlog + log_int:
+            sensors = get_sensors(sensors)
+            lastlog = t
+            if len(temps) > 0: log_avg(temps, t, os.environ['PIMMS_DB'])
+            temps = []
+            sensors = get_sensors(sensors)
+        else:
             temps.append(get_temps(sensors))
-            if t >= lastlog + float(log_int):
-                sensors = get_sensors(sensors) # Look for new / missing sensors
-                lastlog = now()
-                log_avg(temps, t, os.environ['PIMMS_DB'])
-                temps = []
-            time.sleep(0.1)
+
+if __name__ == '__main__':
+    main_func()

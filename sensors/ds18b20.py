@@ -1,5 +1,7 @@
+import time
 from sensors.reading import Reading
 from datefuncs.dt import now
+
 
 class Variance(object):
     ''' Define an allowable variance between to values over a period
@@ -89,9 +91,15 @@ class Sensor(object):
         '''
 
         # Only read if outside update_interval and not forced
-        if (not force and self.current.status != Reading.NO_READING and
-            self.last.time > now() - Sensor.UPDATE_INTERVAL):
-            return
+        t = now()
+        '''
+        while self.last.time + Sensor.UPDATE_INTERVAL > t:
+            t = now()
+            print self.last.time,
+            twait = t - self.last.time + Sensor.UPDATE_INTERVAL
+            print twait, self.__device
+            time.sleep(twait)
+        '''
         try:
             with open('/sys/bus/w1/devices/{sensor}/w1_slave'.format(
                     sensor=self.device)) as device_file:
@@ -102,13 +110,15 @@ class Sensor(object):
                 if reading.status == Reading.VALID: self.__current = reading
         except IOError as e:
             self.__current.status = Reading.LOST_SENSOR
+            print 'File Error {dev}'.format(self.__device)
 
     def __check_valid(self, check_rdg, crc_line):
         ''' Check for a valid reading and return the reading with status set'''
 
         if not self.__check_crc(crc_line):
             check_rdg.status = Reading.CRC_ERROR
-        elif not (self.__check_variance(check_rdg)):
+        elif (self.__current.status != Reading.NO_READING and not 
+              self.__check_variance(check_rdg)):
             check_rdg.status = Sensor.VARIANCE_ERROR
         else:
             check_rdg.status = Reading.VALID
@@ -160,19 +170,28 @@ class Sensor(object):
     @property
     def temperature(self):
         ''' Returns the current temperature as a float'''
+        self.read()
         return self.current.float_val
 
     @property
     def val(self):
         ''' Return the sensor current value this is an int with implied
         decimal point. '''
-
+        self.read()
         return self.current.val
 
     @property
     def variance(self):
         ''' Return the Variance object for this sensor.'''
         return self.__variance
+
+    @property
+    def current(self):
+        return self.__current
+
+    @property
+    def last(self):
+        return self.__last
 
     def variance(self, value, period):
         ''' Set the permitted variance parameters for this sensor.
