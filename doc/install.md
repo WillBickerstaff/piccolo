@@ -1,0 +1,124 @@
+* Install Packages
+
+`sudo apt-get install nginx python-rpi.gpio git sqlite3 python-pip`
+
+* Create a minimal nginx config
+
+`sudo nano /etc/nginx/sites-available/pimms`
+
+Add the following minimal config to the file save and close it
+
+`
+server {
+    listen 80 default;
+    keepalive_timeout 5;
+
+    server_name pimms;
+    access_log /opt/pimms/logs/access.log;
+    error_log /opt/pimms/logs/error.log;
+
+    root /opt/pimms/PiMMS/www/static;
+
+    location / {
+        try_files $uri @proxy_to_app;
+    }
+
+    location @proxy_to_app {
+        proxy_pass http://127.0.0.1:9001;
+    }
+
+    location /static {
+        root /opt/pimms/PiMMS/www/static;
+        index index.html index.htm;
+    }
+}
+`
+
+* symlink into sites enabled and remove the default site:
+
+`
+ln -s /etc/nginx/sites-available/pimms /etc/nginx/sites-enabled/pimms
+rm /etc/nginx//sites-enabled/default
+`
+
+* Create the log files
+
+`
+mkdir /opt/pimms/logs
+touch /opt/pimms/logs/access.log
+touch /opt/pimms/logs/error.log
+`
+
+**Do not start nginx yet**
+
+* Create the application directory and a virtual environment with the necessary libraries
+
+`
+sudo mkdir -p /opt/pimms/PiMMS
+cd /opt
+sudo virtualenv --no-site-packages pimms
+source pimms/bin/activate
+pip install gunicorn flask sqlite3
+`
+
+* Change ownership of the PiMMS directory
+
+`
+sudo chown pi /opt/pimms/PiMMS
+sudo chgrp pi /opt/pimms/PiMMS
+`
+
+* clone git
+
+`
+cd /opt/pimms
+git clone git://github.com/WillBickerstaff/PiMMS.git
+`
+
+* Create the sqlite database
+
+`sqlite3 /opt/pimms/PiMMS/templog.db`
+
+At the sqlite prompt enter
+
+`CREATE TABLE readings(timestamp decimal PRIMARY KEY NOT NULL, reading INT NOT NULL);`
+
+then exit with `.exit`
+
+* Install jqplot
+
+`
+cd /opt/pimms/PiMMS/www/static/js
+wget https://bitbucket.org/cleonello/jqplot/downloads/jquery.jqplot.1.0.8r1250.tar.gz
+tar -xzf jquery.jqplot.1.0.8r1250.tar.gz
+mv dist jqplot
+`
+
+# Start PiMMS
+
+`/opt/pimms/PiMMS/pimms`
+
+If all went well you should now be able to browse to your rPi and see a plot. A temperature reading is continually the number of reads limited only by the read time of the ds18b20 then and the db updated after 60 seconds with the average of all readings in the preceeding minute. After a couple of minutes having refreshed your browser page a line should appear.
+
+To stop pimms you will need to `killall gunicorn` and `ps aux | grep monitor.py` and kill the associated process id
+
+* Wiring:
+
+Use 3 ds18b20 sensors this allows for PiMMS to identify false reading more effectively.
+
+connect all ds18b20 ground pins together, all data (center) pins together and all power pins together.
+From your rPi gpio header connect 5v (pin nearest the corner of the board - Physical pin number 2) to the power pins of the sensors 
+
+connect a 2k resistor between the power pins and data pins. Most sites you see will tell you to use 3.3v and a 4k7 resistor. 5v and 2k enables you to locate your sensor a long way from your rPi upto about 20m.
+
+The data pin should be connected to GPIO7 (Physical pin number 7) and ground to, you guessed it ground  (physical pin number 9)
+
+ds18b20 pins:
+
+`
+Bottom view
+ --------- 
+| o  o  o |
+| 1  2  3 |
+ \_______/
+`
