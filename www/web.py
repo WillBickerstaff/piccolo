@@ -26,7 +26,8 @@ from collections import namedtuple
 from flask import Flask, request
 from jinja2 import Environment, FileSystemLoader
 
-env = Environment(loader = FileSystemLoader('/home/pimms/pimms-app/bin/pimms/www/static/templates'))
+templatedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'templates')
+env = Environment(loader = FileSystemLoader(templatedir))
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
