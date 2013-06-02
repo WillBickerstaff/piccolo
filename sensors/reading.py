@@ -90,7 +90,6 @@ class Reading(object):
         You should follow up by setting the status property as it will
         automatically be set to Reading.UNKNOWN
         '''
-
         assert isinstance(value, int)
         if self.status == Reading.VALID:
             self._last_valid = Reading.last_valid_type(self.val, self.time)
@@ -108,7 +107,10 @@ class DecimalReading(Reading):
         self._factor = 1000.0
         super(DecimalReading, self).__init__()
         for k in kwargs:
-            if 'val' in k:
+            if k == 'val':
+                self.val = kwargs[k]
+                next
+            if k == 'real_val':
                 self.real_val = kwargs[k]
                 next
             if 'stat' in k:

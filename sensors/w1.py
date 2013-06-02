@@ -154,7 +154,6 @@ class Thermal(object):
 
     def __check_valid(self, check_rdg, crc_line):
         ''' Check for a valid reading and return the reading with status set'''
-
         if not self.__check_crc(crc_line):
             check_rdg.status = Reading.CRC_ERROR
         elif (self.__current.status != Reading.NO_READING and not 
