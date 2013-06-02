@@ -14,6 +14,8 @@ Application is tested with:
 * Jquery
 * Jqplot
 
+Preview the app running on my Pi at http://middle-earth.zapto.org
+
 
     Pi.M.M.S is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

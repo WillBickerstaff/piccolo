@@ -93,6 +93,9 @@ wget https://bitbucket.org/cleonello/jqplot/downloads/jquery.jqplot.1.0.8r1250.t
 tar -xzf jquery.jqplot.1.0.8r1250.tar.gz
 mv dist jqplot
 `
+# Start Nginx
+
+`sudo service start nginx`
 
 # Start PiMMS
 
