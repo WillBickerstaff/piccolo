@@ -53,7 +53,17 @@ class Variance(object):
 
 
 class Wire(object):
-    ''' Represent devices on the 1 wire bus'''
+    ''' Represent devices on the 1 wire bus
+
+    The wire class when created will read the wire and create each device
+    in a set available through wire.devices. Currently supports only thermal
+    sensors (see the Thermal class for how to interact with these sensors).
+    unknown devices are ignored.
+
+    Calling wire.detect_devices() will repopulate the wire.devices set with
+    any new devices. Devices that were already in existince on the wire
+    will be retained, any that are no longer there will be removed.
+    '''
 
     THERM = ['10', '22', '28', '3B']
     COUNTER = ['1D']
