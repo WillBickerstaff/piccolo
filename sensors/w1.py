@@ -1,4 +1,4 @@
-import time
+import time, os
 from sensors.reading import Reading, DecimalReading
 
 
@@ -52,16 +52,17 @@ class Variance(object):
         return diff <= (self.value * self.period) * timediff
 
 
-class W1(object):
+class Wire(object):
     ''' Represent devices on the 1 wire bus'''
 
     THERM = ['10', '22', '28', '3B']
     COUNTER = ['1D']
 
     def __init__(self):
+        self.devices = set()
         self.devices = self.detect_devices()
 
-    def detect_devices(old_dev=set()):
+    def detect_devices(self, old_dev=set()):
         ''' Return all sensors in /sys/bus/w1/devices
 
         All sensors are returned as ds18b20.Sensor objects, any  sensor object
@@ -72,7 +73,7 @@ class W1(object):
         self.devices = self.__compare_devices(new_dev)
         return self.devices
 
-    def __compare_devices(new):
+    def __compare_devices(self, new):
         ''' Return a set of sensor objects that contain only 'live' sensors
 
         Sensor objects are retained if they are still active, otherwise
@@ -97,8 +98,8 @@ class W1(object):
             with open('/sys/bus/w1/devices/{dev}/uevent'.format(
                     dev=d), 'r') as f:
                 lines = [l for l in f]
-                family = lines[1].split('=')[1].upper()
-            if family in W1.THERM:
+                family = lines[1].split('=')[1].upper().strip()
+            if family in Wire.THERM:
                 created_devices.append(Thermal(d))
         return set(created_devices)
 
