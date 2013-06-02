@@ -1,6 +1,6 @@
 import os
 import sqlite3 as sqlite
-from sensors.ds18b20 import Sensor as DS18B20
+from sensors.ds18b20 import Thermal as DS18B20
 from sensors.reading import Reading
 from datefuncs.dt import now
 

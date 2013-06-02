@@ -1,6 +1,5 @@
 import time
-from sensors.reading import Reading
-from datefuncs.dt import now
+from sensors.reading import Reading, DecimalReading
 
 
 class Variance(object):
@@ -52,7 +51,60 @@ class Variance(object):
         assert diff >= 0
         return diff <= (self.value * self.period) * timediff
 
-class Sensor(object):
+
+class W1(object):
+    ''' Represent devices on the 1 wire bus'''
+
+    THERM = ['10', '22', '28', '3B']
+    COUNTER = ['1D']
+
+    def __init__(self):
+        self.devices = self.detect_devices()
+
+    def detect_devices(old_dev=set()):
+        ''' Return all sensors in /sys/bus/w1/devices
+
+        All sensors are returned as ds18b20.Sensor objects, any  sensor object
+        provided in arg old_sensors will be returned if it still exists
+        '''
+
+        new_dev = set([x for x in os.listdir("/sys/bus/w1/devices") if 'w1' not in x])
+        self.devices = self.__compare_devices(new_dev)
+        return self.devices
+
+    def __compare_devices(new):
+        ''' Return a set of sensor objects that contain only 'live' sensors
+
+        Sensor objects are retained if they are still active, otherwise
+        they are removed. any new sensors that are in arg new but not in old create
+        new sensor objects
+        '''
+
+        active = set([s for s in self.devices if s.device in new])
+        active_ids = [s.device for s in active]
+        new_dev = self.__create_devices([s for s in new if s not in active_ids])
+        all_dev = active | new_dev
+        assert len(all_dev) == len(new)
+
+        return all_dev
+
+    def __create_devices(self, devices):
+        ''' Create the appropriate devices from a list of device ids '''
+
+        created_devices = []
+        for d in devices:
+            family = ''
+            with open('/sys/bus/w1/devices/{dev}/uevent'.format(
+                    dev=d), 'r') as f:
+                lines = [l for l in f]
+                family = lines[1].split('=')[1].upper()
+            if family in W1.THERM:
+                created_devices.append(Thermal(d))
+        return set(created_devices)
+
+    
+
+class Thermal(object):
     ''' Represents a DS18B20 1 wire digital temperature sensor
 
     The objected is created with the device id number as the only argument,
@@ -69,18 +121,15 @@ class Sensor(object):
     '''
 
 
-    UPDATE_INTERVAL = .75
-
     def __init__(self, sensor_id):
         self.__device = sensor_id
         self.adj = 0
-        self.__current = Reading()
-        self.__last = Reading()
+        self.__current = DecimalReading(factor=1000.0)
+        self.__last = DecimalReading(factor=1000.0)
         self.__variance = Variance()
-        self.read(True)
-        self.update_interval = Sensor.UPDATE_INTERVAL
+        self.read()
 
-    def read(self, force=False):
+    def read(self):
         ''' Read the device file from /sys/bus/w1/devices and validate the data
 
         Will only re-read a device if the last read is greater than 
@@ -90,16 +139,7 @@ class Sensor(object):
         the read data.
         '''
 
-        # Only read if outside update_interval and not forced
-        t = now()
-        '''
-        while self.last.time + Sensor.UPDATE_INTERVAL > t:
-            t = now()
-            print self.last.time,
-            twait = t - self.last.time + Sensor.UPDATE_INTERVAL
-            print twait, self.__device
-            time.sleep(twait)
-        '''
+        t = time.time()
         try:
             with open('/sys/bus/w1/devices/{sensor}/w1_slave'.format(
                     sensor=self.device)) as device_file:
@@ -128,8 +168,8 @@ class Sensor(object):
         ''' Check variance is permitted between this reading and the last.'''
 
         if self.last.status == Reading.VALID:
-            return self.__variance.check_vals(self.last.float_val,
-                                            self.current.float_val,
+            return self.__variance.check_vals(self.last.real_val,
+                                            self.current.real_val,
                                             self.current.time - self.last.time)
         return True
 
@@ -142,7 +182,7 @@ class Sensor(object):
     def __read_temp(self, line):
         ''' Get the temperature reading from the sensor and return as int'''
 
-        return Reading(val = int(line.split(" ")[9][2:]))
+        return DecimalReading(val = int(line.split(" ")[9][2:]))
 
     @property
     def device(self):
@@ -151,19 +191,19 @@ class Sensor(object):
 
     @property
     def current(self):
-        '''Returns the current reading as a Reading object.'''
+        '''Returns the current reading as a DecimalReading object.'''
         return self.__current
 
     @property
     def last(self):
-        '''Returns the last reading as a a Reading object.'''
+        '''Returns the last reading as a a DecimalReading object.'''
         return self.__last
 
     @property
     def isvalid(self):
         '''Return the status code of the current reading
 
-        Status codes are defined in the Reading object
+        Status codes are defined in the DecimalReading object
         '''
         return self.current.status
 
@@ -171,7 +211,7 @@ class Sensor(object):
     def temperature(self):
         ''' Returns the current temperature as a float'''
         self.read()
-        return self.current.float_val
+        return self.current.real_val
 
     @property
     def val(self):

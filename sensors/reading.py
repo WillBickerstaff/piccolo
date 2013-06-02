@@ -1,4 +1,4 @@
-from datefuncs.dt import now, utc
+import time
 from collections import namedtuple
 class Reading(object):
     ''' Storage for sensor readings with reading status
@@ -24,49 +24,27 @@ class Reading(object):
     NO_READING = 0x04
     LOST_SENSOR = 0x5
     UNKNOWN = 0xf6
-    last_valid_type = namedtuple('last_valid_type', 'temperature time')
+    last_valid_type = namedtuple('last_valid_type', 'val time')
 
     def __init__(self, **kwargs):
-        self.__time = now()
-        self.__value  = -999999
-        self.__status = Reading.NO_READING
-        self.multiplier = 1000
-        for k in kwargs:
-            if 'val' in k.lower():
-                self.__value = kwargs[k]
-                self.__time = now()
-                next
-            if 'stat' in k.lower():
-                self.__status = kwargs[k]
-                next
-            if 'mult' in k.lower():
-                self.multiplier = kwargs[k]
-                next
+        self._time = time.time()
+        self._val  = -999999
+        self._status = Reading.NO_READING
+        if 'val' in kwargs:
+            if isinstance(kwargs['val'], int):
+                self.val = kwargs['val']
+                self._time = time.time()
+                for k in kwargs:
+                    if 'stat' in k:
+                        self._status = kwargs[k]
+                        break
 
-        self.__last_valid = Reading.last_valid_type(
-            float(self.__value)/self.multiplier, self.time)
-
-    @property
-    def float_val(self):
-        ''' Returns the reading value / 1000 as a float
-
-        This is useful for sensors that read their values as ints, typically
-        these store the number as e.g 23997 representing 23.997 implying the
-        decimal point.
-        '''
-        if self.status == Reading.VALID:
-            return float(self.__value)/self.multiplier
-        return self.__last_valid.temperature
-
-    @float_val.setter
-    def float_val(self, val):
-        ''' Set the reading value to the actual decimal reading '''
-        self.actval=int(val*self.multiplier)
+        self._last_valid = Reading.last_valid_type(self.val, self.time)
 
     @property
     def time(self):
         ''' Retun the time of the reading in the same format as time.time()'''
-        return self.__time
+        return self._time
 
     @property
     def utc(self):
@@ -74,20 +52,20 @@ class Reading(object):
 
         datetime.datetime.utcfromtimestamp(time.time())
         '''
-        return utc(self.__time)
+        return datetime.datetime.utcfromtimestamp(self._time)
 
     @property
     def status(self):
         ''' Return the Reading status code '''
-        return self.__status
+        return self._status
 
     @status.setter
     def status(self, status):
         ''' Set reading status, should be one of the Reading status codes'''
         if status >= Reading.VALID and status <= Reading.LOST_SENSOR:
-            self.__status = status
+            self._status = status
         else:
-            self.__status = Reading.UNKNOWN
+            self._status = Reading.UNKNOWN
 
     @property
     def val(self):
@@ -95,9 +73,10 @@ class Reading(object):
 
         Many sensors store there values as integers with an implied decimal
         point so 23.997 would be stored as 23997. val returns the int number
-        use float_val to retrieve the value correctly formatted as a float
+        use real_val to retrieve the value correctly formatted as a float
         '''
-        return self.__value
+        return self._val
+
 
     @val.setter
     def val(self, value):
@@ -112,12 +91,52 @@ class Reading(object):
         automatically be set to Reading.UNKNOWN
         '''
 
-        if isinstance(value, float):
-            value = int(value * self.multiplier)
         assert isinstance(value, int)
         if self.status == Reading.VALID:
-            self.__last_valid = Reading.last_valid_type(self.val,
-                                                        self.time)
-        self.__value = value
-        self.__time = now()
+            self._last_valid = Reading.last_valid_type(self.val, self.time)
+        self._val = value
+        self._time = time.time()
         self.status = Reading.UNKNOWN
+
+    @property
+    def last_valid(self):
+        return self._last_valid
+
+class DecimalReading(Reading):
+
+    def __init__ (self, **kwargs): 
+        self._factor = 1000.0
+        super(DecimalReading, self).__init__()
+        for k in kwargs:
+            if 'val' in k:
+                self.real_val = kwargs[k]
+                next
+            if 'stat' in k:
+                self.status = kwargs[k]
+                next
+            if 'mult' in k or 'fact' in k:
+                self.fact = kwargs[k]
+                next
+
+
+
+    @property
+    def real_val(self):
+        return self.val / self.factor
+
+    @real_val.setter
+    def real_val(self, val):
+        self.val = int(val * self.factor)
+
+    @property
+    def factor(self):
+        return self._factor
+
+    @factor.setter
+    def factor(self, val):
+        self._factor = float(val)
+
+    @property
+    def last_valid(self):
+        return Reading.last_valid_type(super.last_valid.val / self.factor,
+                                       super.last_valid.time)
