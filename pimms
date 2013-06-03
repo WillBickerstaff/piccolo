@@ -29,21 +29,23 @@ def check_db(db):
     else:
         db_error(db)
 
-def ctrlc_handler(processes):
-    for process in processes:
-        process.kill()
-    sys.exit(1)
+def int_handler(signal, frame):
+    print 'Exiting'
+    sys.exit(0)
+
+
+signal.signal(signal.SIGINT, int_handler)
+
 
 if __name__=='__main__':
-    processes = []
     try:
         (options, args) = parser.parse_args()
         check_db(options.db)
         print 'Starting Monitor...'
-        processes.append(subprocess.Popen(['python', 'monitor.py']))
+        subprocess.Popen(['python', 'monitor.py'])
         print 'Starting Gunicorn'
-        processes.append(subprocess.Popen(['gunicorn', 'www.web:app',
-                                           '--debug', '-b',
-                                           'localhost:9001']))
+        subprocess.Popen(['gunicorn', 'www.web:app', '--debug', '-b',
+                          'localhost:9001'])
+        signal.pause()
     except KeyboardInterrupt:
-        ctrlc_handler(processes)
+        raise

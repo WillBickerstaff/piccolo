@@ -103,7 +103,8 @@ mv dist jqplot
 
 If all went well you should now be able to browse to your rPi and see a plot. A temperature reading is continually the number of reads limited only by the read time of the ds18b20 then and the db updated after 60 seconds with the average of all readings in the preceeding minute. After a couple of minutes having refreshed your browser page a line should appear.
 
-To stop pimms you will need to `killall gunicorn` and `ps aux | grep monitor.py` and kill the associated process id
+To stop pimms you just need to kill the process or keyboard interrupt with
+ctrl+c
 
 * Wiring:
 
