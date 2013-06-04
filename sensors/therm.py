@@ -1,7 +1,8 @@
 import time
 from string import Template
 from sensors.base import Sensor, Variance
-from sensors.reading import Reading, DecimalReading
+from sensors.reading import Reading
+from sensors import W1_THERM
 
 class Thermal(Sensor):
     ''' Represents a 1 wire digital temperature sensor
@@ -29,11 +30,13 @@ class Thermal(Sensor):
     # Families that are valid Thermal Sensors
     FAMILIES = {'10': 'DS18S20', '22': 'DS1822', '28': 'DS18B20',
                 '3B': 'DS1825', '42': 'DS28EA00'}
+    FACTORS = {'DEFAULT': 1000.0, 'DS18B20': 1000.0}
 
     def __init__(self, sensor_id, family=None):
         super(Thermal, self).__init__(sensor_id, family)
-        self._current = DecimalReading(factor=1000.0)
-        self._last = DecimalReading(factor=1000.0)
+        self.factor = Thermal.FACTORS[self.family] if self.family in Thermal.FACTORS else Thermal.FACTORS['DEFAULT']
+        self._current = Reading()
+        self._last = Reading()
         self._variance = Variance(value=1.0, period=1.0)
         self.read()
 
@@ -51,7 +54,7 @@ class Thermal(Sensor):
 
         t = time.time()
         try:
-            with open(Sensor.DEVICE_FILE.substitute(dev=self.device),'r') as f:
+            with open(W1_THERM.substitute(dev=self.device),'r') as f:
                 self._last = self.current
                 lines = [l for l in f]
                 reading = self.__check_valid(self.__read_temp(lines[1]),
@@ -73,15 +76,6 @@ class Thermal(Sensor):
             check_rdg.status = Reading.VALID
         return check_rdg
 
-    def __detect_family(self):
-        ''' Discover what sensor family this device belongs is '''
-
-        with open(Sensor.UEVENT_FILE.substitute(dev=self.device), 'r') as f:
-            lines = [l for l in f]
-            family = lines[1].split('=')[1].upper().strip()
-            self.family = family
-
-
     def __check_crc(self, line):
         ''' Check the CRC status provided by the sensor '''
 
@@ -90,7 +84,8 @@ class Thermal(Sensor):
     def __read_temp(self, line):
         ''' Get the temperature reading from the sensor and return as int'''
 
-        return DecimalReading(val = int(line.split(" ")[9][2:]))
+        return Reading(val = int(line.split(" ")[9][2:]),
+                       factor = self.factor)
 
 
     @property
@@ -105,7 +100,7 @@ class Thermal(Sensor):
         ''' Get the Sensor type - DS18B20, DS18S20 etc '''
 
         if self._family is None:
-            self.__detect_family
+            self._detect_family
         return Thermal.FAMILIES[self._family]
 
     @family.setter

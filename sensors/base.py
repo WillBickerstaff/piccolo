@@ -1,13 +1,8 @@
 from string import Template
 from sensors.reading import Reading
-from sensors import W1_LOC
+from sensors import W1_UEVENT
 
 class Sensor(object):
-    # Location of the file where sensor data is
-    DEVICE_FILE = Template(''.join([W1_LOC, '$dev/w1_slave']))
-    # Location of the file that contains sensor type
-    UEVENT_FILE = Template(''.join([W1_LOC, '$dev/uevent']))
-
 
     def __init__(self, sensor_id, family=None):
         self._device = sensor_id
@@ -15,6 +10,7 @@ class Sensor(object):
         self._current = Reading()
         self._last = Reading()
         self._variance = Variance()
+        self._factor = 1.0
         self.adj = 0
 
     def _check_variance(self, reading):
@@ -52,7 +48,7 @@ class Sensor(object):
 
     @property
     def val(self):
-        ''' Return the sensor current value this as int. '''
+        ''' Return the sensor current value as int. '''
 
         self.read()
         return self.current.val
@@ -86,12 +82,27 @@ class Sensor(object):
         self._variance.value = value
         self._variance.period = period
 
+    def _detect_family(self):
+        ''' Discover what sensor family this device belongs is '''
+
+        with open(W1_UEVENT.substitute(dev=self.device), 'r') as f:
+            lines = [l for l in f]
+            family = lines[1].split('=')[1].upper().strip()
+            self.family = family
+
     @property
     def variance(self):
         ''' Return the Variance object for this sensor.'''
 
         return self._variance
 
+    @property
+    def factor(self):
+        return self._factor
+
+    @factor.setter
+    def factor(self, factor):
+        self._factor = float(factor)
 
 class Variance(object):
     ''' Define an allowable variance between to values over a period

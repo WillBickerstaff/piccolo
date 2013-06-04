@@ -1,7 +1,7 @@
 import os
-from sensors.reading import Reading, DecimalReading
+from sensors.reading import Reading
 from sensors.therm import Thermal
-from sensors import W1_LOC
+from sensors import W1_LOC, W1_UEVENT
 
 class Wire(object):
     ''' Represent devices on the 1 wire bus
@@ -73,8 +73,7 @@ class Wire(object):
         created_devices = []
         for d in devices:
             family = ''
-            with open(''.join([W1_LOC,'{dev}/uevent'.format(
-                    dev=d)]), 'r') as f:
+            with open(W1_UEVENT.substitute(dev=d), 'r') as f:
                 lines = [l for l in f]
                 family = lines[1].split('=')[1].upper().strip()
             if family in Thermal.FAMILIES:

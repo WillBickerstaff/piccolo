@@ -30,14 +30,18 @@ class Reading(object):
         self._time = time.time()
         self._val  = -999999
         self._status = Reading.NO_READING
+        self.factor = 1.0
+        # Set the factor first if it's there so as to use a correct
+        # adjustment of any float value given
+        if 'factor' in kwargs:
+            self.factor = kwargs['factor']
         if 'val' in kwargs:
             if isinstance(kwargs['val'], int):
                 self.val = kwargs['val']
-                self._time = time.time()
-                for k in kwargs:
-                    if 'stat' in k:
-                        self._status = kwargs[k]
-                        break
+            elif isinstance(kwargs['val'], float):
+                self.real_val = kwargs['val']
+        if 'status' in kwargs:
+            self._status = kwargs['status']
 
         self._last_valid = Reading.last_valid_type(self.val, self.time)
 
@@ -66,6 +70,14 @@ class Reading(object):
             self._status = status
         else:
             self._status = Reading.UNKNOWN
+
+    @property
+    def real_val(self):
+        return self.val / self.factor
+
+    @real_val.setter
+    def real_val(self, val):
+        self.val = int(val * self.factor)
 
     @property
     def val(self):
@@ -101,27 +113,6 @@ class Reading(object):
     def last_valid(self):
         return self._last_valid
 
-class DecimalReading(Reading):
-
-    def __init__ (self, **kwargs): 
-        self._factor = 1000.0
-        super(DecimalReading, self).__init__()
-        for k in kwargs:
-            if k == 'val':
-                self.val = kwargs[k]
-                next
-            if k == 'real_val':
-                self.real_val = kwargs[k]
-                next
-            if 'stat' in k:
-                self.status = kwargs[k]
-                next
-            if 'mult' in k or 'fact' in k:
-                self.fact = kwargs[k]
-                next
-
-
-
     @property
     def real_val(self):
         return self.val / self.factor
@@ -131,14 +122,6 @@ class DecimalReading(Reading):
         self.val = int(val * self.factor)
 
     @property
-    def factor(self):
-        return self._factor
-
-    @factor.setter
-    def factor(self, val):
-        self._factor = float(val)
-
-    @property
-    def last_valid(self):
-        return Reading.last_valid_type(super.last_valid.val / self.factor,
-                                       super.last_valid.time)
+    def last_real_valid(self):
+        return Reading.last_valid_type(self.last_valid.val / self.factor,
+                                       self.last_valid.time)
