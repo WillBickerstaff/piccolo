@@ -32,7 +32,7 @@ def make_day(day):
     return Daytype(daystart, dayend)
 
 def timestamp_day(timestamp):
-    d = utc(t)
+    d = utc(timestamp)
     day = makeday(d)
     return DayType(mktime(day.start), mktime(day.end))
 
