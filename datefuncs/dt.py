@@ -34,7 +34,8 @@ def make_day(day):
 def timestamp_day(timestamp):
     d = utc(timestamp)
     day = make_day(d)
-    return DayType(mktime(day.start), mktime(day.end))
+    return Daytype(time.mktime(datetime.date.timetuple(day.start)),
+                   time.mktime(datetime.datetime.timetuple(day.end)))
 
 def join_date(delim, *args):
     """ Join with delim a list of args into a string """
@@ -52,4 +53,4 @@ def time2web(timestamp):
 
 def is_today(timestamp):
     today = timestamp_day(now())
-    return today.start < timestamp < today.end
+    return today.start <= timestamp <= today.end

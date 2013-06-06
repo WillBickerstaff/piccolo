@@ -76,19 +76,23 @@ def index():
         pdate = time.strptime(request.form['dateselected'], '%m/%d/%Y')
         if dt.valid_date(pdate.tm_year, pdate.tm_mon, pdate.tm_mday):
             plotdate = datetime.date.fromtimestamp(time.mktime(pdate))
-
+    template_args = None
     day = dt.make_day(plotdate) # datetime for start and end of day
-    temps = [[dt.time2web(r[0]), float(r[1])/1000] for r in get_readings(day)]
     # Time from now to the 1st and last available reading
     # Used to limit the range available in the datepicker
     deltas = reading_extents_offset()
+    template_args = {"start": 0 - deltas.start.days,
+                     "end": deltas.end.days,
+                     "plotdate": plotdate.strftime('%d/%m/%Y'),
+                     "day": day}
+    if not dt.is_today(time.mktime(datetime.date.timetuple(plotdate))):
+        temps = [[dt.time2web(r[0]), 
+                  float(r[1])/1000] for r in get_readings(day)]
+        template_args["readings"] = temps
 
+    
     template = env.get_template('default.html')
-    return template.render(start = 0 - deltas.start.days,
-                           end = deltas.end.days,
-                           readings = temps, 
-                           plotdate = plotdate.strftime('%d/%m/%Y'),
-                           day = day )
+    return template.render(args=template_args)
 
 if __name__ == '__main__':
     app.run()

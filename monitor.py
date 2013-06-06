@@ -39,7 +39,8 @@ def main_func():
     wire = Wire()
     temps = [] # current loop temperatures
     jsonf = jsonT(os.path.join(os.path.dirname(os.path.abspath(__file__)), 
-                              options.jsonf, 'today.json'))
+                              options.jsonf, 'today.json'),
+                  os.environ['PIMMS_DB'])
     while True:
         t = now()
         if t >= lastlog + log_int:
@@ -47,7 +48,7 @@ def main_func():
             if len(temps) > 0: 
                 temp = sum(temps) / len(temps)
                 log_avg(temp, t, os.environ['PIMMS_DB'])
-                jsonf.add_val(t, temp)
+                jsonf.add_val(t, temp/1000.0)
             temps = []
             wire.detect_devices()
         else:

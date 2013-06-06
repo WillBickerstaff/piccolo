@@ -1,11 +1,13 @@
-import os, json, sqlite3
+import os, json
+import sqlite3 as sqlite
 import datefuncs.dt as dt
 from miscfuncs import check_file
 
 class JSONTemps(object):
     
-    def __init__(self, filename):
+    def __init__(self, filename, db=None):
         self._curjson = []
+        self.db = db
         self._filename = None
         # Property will raise an exception if theres a problem here
         self.filename = filename
@@ -34,8 +36,8 @@ class JSONTemps(object):
         if len(self._curjson) == 0:
             self._curjson = self._get_today()
         # Now we can finally add the value to the json
-        self.curjson.append([dt.time2web(time), val])
-        self.__write_json()
+        self._curjson.append([dt.time2web(time), val])
+        self.__writejson()
 
     def _sameday(self):
         ''' Check if today is the same date as the last reading in the json '''
@@ -44,14 +46,15 @@ class JSONTemps(object):
         if len(self._curjson) == 0: return
 
         today = dt.utc_now()
-        last = dt.utc(dt.web2date(self._curjson[-1][0]))
+        last = dt.utc(dt.web2time(self._curjson[-1][0]))
         return (today.day == last.day and
                 today.month == last.month and
                 today.year == last.year)
 
     def _get_today(self):
         ''' retrieve all of the readings for today formatted for json file'''
-
+        
+        if self.db is None: return
         res = []
         today = dt.timestamp_day(dt.now())
         with sqlite.connect(os.environ['PIMMS_DB']) as con:
@@ -61,7 +64,7 @@ class JSONTemps(object):
                         "ORDER BY timestamp ASC;".format(ts = today.start,
                                                          te = today.end))
             res = cur.fetchall()
-        return self._dbval2json(res)
+        return JSONTemps.dbval2json(res)
 
     @staticmethod
     def dbval2json(res):
@@ -71,7 +74,7 @@ class JSONTemps(object):
         '''
         jsonvals = []
         for row in res:
-            tm = dt.webtime_from_timestamp(row[0])
+            tm = dt.time2web(row[0])
             temp = row[1] / 1000.0
             jsonvals.append([tm, temp])
         return jsonvals
@@ -79,7 +82,7 @@ class JSONTemps(object):
     def __writejson(self):
         ''' Write the current json vals to the file '''
         with open(self.filename, 'w') as f:
-            f.write(json.dumps(self._curjson))
+            f.write(json.dumps({"plotdata":self._curjson}))
 
     @property
     def filename(self):

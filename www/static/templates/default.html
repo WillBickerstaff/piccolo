@@ -15,23 +15,36 @@
   $(function() {
     $( "#datepicker" ).datepicker({
       showButtonPanel: true,
-      minDate: {{ start }},
-      maxDate: {{ end }},
+      minDate: {{ args.start }},
+      maxDate: {{ args.end }},
       changeMonth: true,
       changeYear: true,
     });
   });
   </script>
+
+
 <script>
 $(document).ready(function(){
-  var line1= {{ readings }}
+  {% if args.readings is undefined %}
+  $.getJSON("/json/today.json", function(data){ {% endif %}
+  var line1= {% if args.readings is defined %}{{ args.readings }}{% else %}[]{% endif %};
+  {% if args.readings is undefined %}
+  $.each(data.plotdata, function(key, val){
+    line1.push([val[0], val[1]])
+  });
+  {% endif %}
+  console.log(line1);
+   
   var plot1 = $.jqplot('plot', [line1], {
-      title:'Indoor Temperature {{ plotdate }}',
+
+      title:'Indoor Temperature {{ args.plotdate }}',
+
       axes:{
         xaxis:{
           renderer:$.jqplot.DateAxisRenderer,
-          min: '{{ day.start }}',
-          max: '{{ day.end }}',
+          min: '{{ args.day.start }}',
+          max: '{{ args.day.end }}',
           tickInterval: '1 hour',
           tickOptions:{
             formatString:'%H:%M'
@@ -48,6 +61,7 @@ $(document).ready(function(){
                markerOptions:{size:0},
                lineWidth: 1,
                shadow: false,
+               rendererOptions: {smooth: true}
                }],
 
       highlighter: {
@@ -59,6 +73,7 @@ $(document).ready(function(){
         zoom: true
       }
   });
+{% if args.readings is undefined %} }); {% endif %}
 });
 </script>
 
