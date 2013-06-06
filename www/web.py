@@ -62,36 +62,33 @@ def get_readings(day):
                 time.mktime(day.end.timetuple()))
     with sqlite.connect(os.environ['PIMMS_DB']) as con:
         cur = con.cursor()
-        cur.execute("SELECT * FROM readings WHERE timestamp > {start:f} AND timestamp < {end:f};".format(
-                start=plotdate[0], end=plotdate[1]))
+        cur.execute("SELECT * FROM readings "
+                    "WHERE timestamp > {start:f} AND timestamp < {end:f} " 
+                    "ORDER BY timestamp ASC;".format(start=plotdate[0],
+                                                     end=plotdate[1]))
         res = cur.fetchall()
     return res
 
 @app.route('/', methods=["GET", "POST"])
 def index():
-    plotdate = datetime.date.fromtimestamp(dt.now()).__str__()
-    if request.method == 'POST':
-        if 'dateselected' in request.form:
-            pdate = request.form['dateselected']
-            psplit = [int(x) for x in pdate.split('/')]
-            if (len(psplit) == 3 and
-                   dt.valid_date(psplit[2], psplit[0], psplit[1])):
-                plotdate = dt.join_date('-', psplit[2], psplit[0], psplit[1])
+    plotdate = datetime.date.fromtimestamp(dt.now())
+    if request.method == 'POST' and 'dateselected' in request.form:
+        pdate = time.strptime(request.form['dateselected'], '%m/%d/%Y')
+        if dt.valid_date(pdate.tm_year, pdate.tm_mon, pdate.tm_mday):
+            plotdate = datetime.date.fromtimestamp(time.mktime(pdate))
 
-    plotdate = [int(x) for x in plotdate.split('-')]
-    datestr = dt.join_date('/', plotdate[2], plotdate[1], plotdate[0])
-    temps = []
-    day = dt.make_day(plotdate[0], plotdate[1], plotdate[2])
-    res = get_readings(day)
-    for r in res:
-        temps.append([str(dt.utc(r[0])).split('.')[0], float(r[1])/1000])
-
+    day = dt.make_day(plotdate) # datetime for start and end of day
+    temps = [[dt.time2web(r[0]), float(r[1])/1000] for r in get_readings(day)]
+    # Time from now to the 1st and last available reading
+    # Used to limit the range available in the datepicker
     deltas = reading_extents_offset()
 
     template = env.get_template('default.html')
     return template.render(start = 0 - deltas.start.days,
                            end = deltas.end.days,
-                           readings=temps, plotdate=datestr, day=day )
+                           readings = temps, 
+                           plotdate = plotdate.strftime('%d/%m/%Y'),
+                           day = day )
 
 if __name__ == '__main__':
     app.run()

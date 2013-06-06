@@ -1,6 +1,9 @@
 import time, datetime
 from collections import namedtuple
 
+Daytype = namedtuple('DayType', 'start end')
+DATEFORMAT = '%Y-%m-%d %H:%M:%S'
+
 def now():
     return time.time()
 
@@ -21,16 +24,28 @@ def valid_date(year, month, day):
         return True
     return False
 
-def make_day(year, month, day):
+def make_day(day):
     """ Create a namedtuple with 2 datetime objects spaning a day """
 
-    Daytype = namedtuple('DayType', 'start end')
-    daystart = datetime.datetime(year, month, day)
-    dayend = datetime.datetime(year, month, day, 23, 59, 59)
+    daystart = datetime.datetime(day.year, day.month, day.day)
+    dayend = datetime.datetime(day.year, day.month, day.day, 23, 59, 59)
     return Daytype(daystart, dayend)
+
+def timestamp_day(timestamp):
+    d = utc(t)
+    day = makeday(d)
+    return DayType(mktime(day.start), mktime(day.end))
 
 def join_date(delim, *args):
     """ Join with delim a list of args into a string """
 
     return delim.join([str(x) for x in args])
 
+def webformat(d):
+    return d.strftime(DATEFORMAT)
+
+def web2time(timestring):
+    return time.mktime(time.strptime(timestring, DATEFORMAT))
+
+def time2web(timestamp):
+    return webformat(datetime.datetime.utcfromtimestamp(timestamp))

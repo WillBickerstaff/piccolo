@@ -3,31 +3,20 @@
 import os, sys, subprocess, signal
 from optparse import OptionParser
 import monitor
+from miscfuncs import check_file
 
 
 parser = OptionParser()
 parser.add_option('-d', '--db', default='templog.db', dest='db',
 			help='Database location')
-parser.add_option('-i', '--int', default=60, dest='log_int',
-			help='Log interval')
+parser.add_option('-i', '--int', default='60', dest='logint',
+			help='Log interval in seconds')
+parser.add_option('-j', '--json', default='www/static/json/', dest='jsonf',
+			help='Location for created JSON files')
 
 def db_error(db):
     print "ERROR: Can not open or create database %s"%db
     sys.exit(1)
-
-def create_db(db):
-    try:
-        open(options.db, 'w').close()
-    except IOError:
-        db_error(db)
-
-def check_db(db):
-    if not os.path.isfile(options.db):
-        create_db(db)
-    if os.path.isfile(options.db):
-        os.environ['PIMMS_DB'] = os.path.abspath(db)
-    else:
-        db_error(db)
 
 def int_handler(signal, frame):
     print 'Exiting'
@@ -40,9 +29,14 @@ signal.signal(signal.SIGINT, int_handler)
 if __name__=='__main__':
     try:
         (options, args) = parser.parse_args()
-        check_db(options.db)
+        check_file(options.db)
+        # Must set this so as gunicorn dynamic pages no where the db is
+        os.environ['PIMMS_DB'] = os.path.abspath(options.db)
         print 'Starting Monitor...'
-        subprocess.Popen(['python', 'monitor.py'])
+        subprocess.Popen(['python', 'monitor.py',
+                          '-i', options.logint,
+                          '-d', options.db,
+                          '-j', options.jsonf])
         print 'Starting Gunicorn'
         subprocess.Popen(['gunicorn', 'www.web:app', '--debug', '-b',
                           'localhost:9001'])
