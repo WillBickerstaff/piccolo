@@ -15,7 +15,7 @@ class JSONTemps(object):
             except ValueError:
                 self._curjson = []
         
-    def add_val(time, val):
+    def add_val(self, time, val):
         ''' Add a value to the json file
 
         Arguments:
