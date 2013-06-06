@@ -25,7 +25,7 @@ class JSONTemps(object):
 
         # JSON is only for today, if we are tring to add a value for another
         # day discard it
-        if not dt.time_is_today(time):
+        if not dt.is_today(time):
             return
         # if We've moved into a new day empty the values
         if not self._sameday():

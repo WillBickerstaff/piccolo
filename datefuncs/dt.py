@@ -49,3 +49,7 @@ def web2time(timestring):
 
 def time2web(timestamp):
     return webformat(datetime.datetime.utcfromtimestamp(timestamp))
+
+def is_today(timestamp):
+    today = timestamp_day(now())
+    return today.start < timestamp < today.end
