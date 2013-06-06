@@ -33,7 +33,7 @@ def make_day(day):
 
 def timestamp_day(timestamp):
     d = utc(timestamp)
-    day = makeday(d)
+    day = make_day(d)
     return DayType(mktime(day.start), mktime(day.end))
 
 def join_date(delim, *args):
