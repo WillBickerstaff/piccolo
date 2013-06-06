@@ -46,8 +46,7 @@ def main_func():
             lastlog = t
             if len(temps) > 0: 
                 temp = sum(temps) / len(temps)
-                log_avg(temp, t, os.environ['PIMMS_DB'], 
-                                       jsonf)
+                log_avg(temp, t, os.environ['PIMMS_DB'])
                 jsonf.add_val(t, temp)
             temps = []
             wire.detect_devices()
