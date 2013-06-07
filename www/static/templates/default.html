@@ -34,10 +34,14 @@ $(document).ready(function(){
     line1.push([val[0], val[1]])
   });
   {% endif %}
+  var dt = new Date(line1[0][0]);
+  var dd = dt.getDate();
+  var MM = dt.getMonth() + 1;
+  var yyyy = dt.getFullYear();
+  var fdt = dd + '/' + MM + '/' + yyyy;
    
   var plot1 = $.jqplot('plot', [line1], {
-
-      title:'Indoor Temperature {{ args.plotdate }}',
+      title:'Indoor Temperature ' + fdt,
 
       axes:{
         xaxis:{
