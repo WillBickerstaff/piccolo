@@ -6,7 +6,8 @@ from miscfuncs import check_file
 class JSONTemps(object):
     
     def __init__(self, filename, db=None):
-        self._curjson = []
+        self._curjson = None
+        self._empty()
         self.db = db
         self._filename = None
         # Property will raise an exception if theres a problem here
@@ -16,6 +17,9 @@ class JSONTemps(object):
                 self._curjson = json.loads(f.read())
             except ValueError:
                 self._curjson = []
+
+    def _empty(self):
+        self._curjson = {'plotdata':[]}
         
     def add_val(self, time, val):
         ''' Add a value to the json file
@@ -31,12 +35,12 @@ class JSONTemps(object):
             return
         # if We've moved into a new day empty the values
         if not self._sameday():
-            self._curjson = []
+            self._empty()
         # Get all of todays readings so far if we currently have none
         if len(self._curjson) == 0:
             self._curjson = self._get_today()
         # Now we can finally add the value to the json
-        self._curjson.append([dt.time2web(time), val])
+        self._curjson['plotdata'].append([dt.time2web(time), val])
         self.__writejson()
 
     def _sameday(self):
@@ -46,7 +50,7 @@ class JSONTemps(object):
         if len(self._curjson) == 0: return
 
         today = dt.utc_now()
-        last = dt.utc(dt.web2time(self._curjson[-1][0]))
+        last = dt.utc(dt.web2time(self._curjson['plotdata'][-1][0]))
         return (today.day == last.day and
                 today.month == last.month and
                 today.year == last.year)
@@ -82,7 +86,7 @@ class JSONTemps(object):
     def __writejson(self):
         ''' Write the current json vals to the file '''
         with open(self.filename, 'w') as f:
-            f.write(json.dumps({"plotdata":self._curjson}))
+            f.write(json.dumps(self._curjson))
 
     @property
     def filename(self):

@@ -69,30 +69,39 @@ def get_readings(day):
         res = cur.fetchall()
     return res
 
-@app.route('/', methods=["GET", "POST"])
-def index():
+def render_page(template, template_args):
+    template = env.get_template(template)
+    return template.render(args=template_args)
+
+def requested_plot(request)
     plotdate = datetime.date.fromtimestamp(dt.now())
     if request.method == 'POST' and 'dateselected' in request.form:
         pdate = time.strptime(request.form['dateselected'], '%m/%d/%Y')
         if dt.valid_date(pdate.tm_year, pdate.tm_mon, pdate.tm_mday):
             plotdate = datetime.date.fromtimestamp(time.mktime(pdate))
-    template_args = None
+    return plotdate
+
+def doplot(plotdate):
     day = dt.make_day(plotdate) # datetime for start and end of day
     # Time from now to the 1st and last available reading
     # Used to limit the range available in the datepicker
     deltas = reading_extents_offset()
     template_args = {"start": 0 - deltas.start.days,
                      "end": deltas.end.days,
-                     "plotdate": plotdate.strftime('%d/%m/%Y'),
                      "day": day}
     if not dt.is_today(time.mktime(datetime.date.timetuple(plotdate))):
         temps = [[dt.time2web(r[0]), 
                   float(r[1])/1000] for r in get_readings(day)]
         template_args["readings"] = temps
 
-    
-    template = env.get_template('default.html')
-    return template.render(args=template_args)
+    return template_args
+
+@app.route('/', methods=["GET", "POST"])
+def index():
+    template_args = doplot(requested_plot(request))
+    print template_args
+    return render_page('default.html', template_args)
+
 
 if __name__ == '__main__':
     app.run()
