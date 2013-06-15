@@ -1,0 +1,50 @@
+<html>
+<head>
+<title>{% if title %}{{ title }} | {% endif %}P.I.M.M.S</title>
+{% block meta %}{% endblock %}
+{% block stylesheets %}
+<link rel="stylesheet" type="text/css" href="/css/base.css">
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+{% endblock %}
+{% block scripts %}
+<!--[if IE]><script language="javascript" type="text/javascript" src="/js/jqplot/excanvas.js"></script><![endif]-->
+
+<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+<script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+
+<script type="text/javascript" src="/js/jqplot/jquery.jqplot.min.js"></script>
+<script type="text/javascript" src="/js/jqplot/plugins/jqplot.dateAxisRenderer.min.js"></script>
+<script type="text/javascript" src="/js/jqplot/plugins/jqplot.cursor.min.js"></script>
+<script type="text/javascript" src="/js/jqplot/plugins/jqplot.highlighter.min.js"></script>
+<script>
+$(function() {
+  $( "#datepicker" ).datepicker({
+    showButtonPanel: true,
+    minDate: {{ args.start }},
+    maxDate: {{ args.end }},
+    changeMonth: true,
+    changeYear: true
+  });
+});
+</script>
+{% endblock %}
+{% block plotscript %}
+{% endblock %}
+{% block body %}
+<div id="datecontrol">
+  <form action="." method="POST">
+    <input type="text" id="datepicker" name="dateselected"/>
+    <input type="submit" name="dform" value="Plot">
+  </form>
+</div>
+
+<div id="plot">
+</div>
+{% endblock %}
+<div id="footer">
+{% block footer %}{% endblock %}
+<span id="gpl">
+<a href="http://www.gnu.org/licenses/gpl.html"><img src="/images/gplv3-88x31.png" height="31" width="88" alt="GPLv3"></a>
+</span>
+</body>
+</html>

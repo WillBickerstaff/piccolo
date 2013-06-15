@@ -1,41 +1,8 @@
-{% extends "base.html" %}
-{% block stylesheets %}
-<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
-{% endblock %}
-{% block scripts %}
-<!--[if IE]><script language="javascript" type="text/javascript" src="/js/jqplot/excanvas.js"></script><![endif]-->
-
-<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
-<script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
-
-<script type="text/javascript" src="/js/jqplot/jquery.jqplot.min.js"></script>
-<script type="text/javascript" src="/js/jqplot/plugins/jqplot.dateAxisRenderer.min.js"></script>
-<script type="text/javascript" src="/js/jqplot/plugins/jqplot.cursor.min.js"></script>
-<script type="text/javascript" src="/js/jqplot/plugins/jqplot.highlighter.min.js"></script>
-
-  <script>
-  $(function() {
-    $( "#datepicker" ).datepicker({
-      showButtonPanel: true,
-      minDate: {{ args.start }},
-      maxDate: {{ args.end }},
-      changeMonth: true,
-      changeYear: true
-    });
-  });
-  </script>
-
-
+{% extends "plotbase.html" %}
+{% block plotscript %}
 <script>
 $(document).ready(function(){
-  {% if args.readings is undefined %}
-  $.getJSON("/json/today.json", function(data){ {% endif %}
-  var line1= {% if args.readings is defined %}{{ args.readings }}{% else %}[]{% endif %};
-  {% if args.readings is undefined %}
-  $.each(data.plotdata, function(key, val){
-    line1.push([val[0], val[1]])
-  });
-  {% endif %}
+  var line1= {{ args.readings }};
   var dt = new Date(line1[0][0]);
   var dd = dt.getDate();
   var MM = dt.getMonth() + 1;
@@ -82,19 +49,6 @@ $(document).ready(function(){
         zoom: true
       }
   });
-{% if args.readings is undefined %} }); {% endif %}
 });
 </script>
-
-
-{% endblock %}
-{% block body %}
-<div id="datecontrol">
-<form action="." method="POST">
-<input type="text" id="datepicker" name="dateselected"/>
-<input type="submit" name="dform" value="Plot">
-</form>
-</div>
-<div id="plot">
-</div>
 {% endblock %}
