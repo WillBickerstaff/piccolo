@@ -52,5 +52,8 @@ def time2web(timestamp):
     return webformat(datetime.datetime.utcfromtimestamp(timestamp))
 
 def is_today(timestamp):
+    ts = timestamp
+    if type(timestamp) is datetime.date:
+        ts = time.mktime(timestamp.timetuple())
     today = timestamp_day(now())
-    return today.start <= timestamp <= today.end
+    return today.start <= ts <= today.end

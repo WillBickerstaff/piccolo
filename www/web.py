@@ -73,7 +73,7 @@ def render_page(template, template_args):
     template = env.get_template(template)
     return template.render(args=template_args)
 
-def requested_plot(request)
+def requested_plot(request):
     plotdate = datetime.date.fromtimestamp(dt.now())
     if request.method == 'POST' and 'dateselected' in request.form:
         pdate = time.strptime(request.form['dateselected'], '%m/%d/%Y')
@@ -89,18 +89,19 @@ def doplot(plotdate):
     template_args = {"start": 0 - deltas.start.days,
                      "end": deltas.end.days,
                      "day": day}
-    if not dt.is_today(time.mktime(datetime.date.timetuple(plotdate))):
+    template = 'today.html'
+    if not dt.is_today(plotdate):
+        template = 'default.html'
         temps = [[dt.time2web(r[0]), 
                   float(r[1])/1000] for r in get_readings(day)]
         template_args["readings"] = temps
 
-    return template_args
+    return template, template_args
 
 @app.route('/', methods=["GET", "POST"])
 def index():
-    template_args = doplot(requested_plot(request))
-    print template_args
-    return render_page('default.html', template_args)
+    template, template_args = doplot(requested_plot(request))
+    return render_page(template, template_args)
 
 
 if __name__ == '__main__':

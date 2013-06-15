@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block stylesheets %}
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+{% endblock %}
+{% block scripts %}
+<!--[if IE]><script language="javascript" type="text/javascript" src="/js/jqplot/excanvas.js"></script><![endif]-->
+
+<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+<script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+
+<script type="text/javascript" src="/js/jqplot/jquery.jqplot.min.js"></script>
+<script type="text/javascript" src="/js/jqplot/plugins/jqplot.dateAxisRenderer.min.js"></script>
+<script type="text/javascript" src="/js/jqplot/plugins/jqplot.cursor.min.js"></script>
+<script type="text/javascript" src="/js/jqplot/plugins/jqplot.highlighter.min.js"></script>
+
+  <script>
+  $(function() {
+    $( "#datepicker" ).datepicker({
+      showButtonPanel: true,
+      minDate: {{ args.start }},
+      maxDate: {{ args.end }},
+      changeMonth: true,
+      changeYear: true
+    });
+  });
+  </script>
+
+
+<script>
+$(document).ready(function(){
+  {% if args.readings is undefined %}
+  $.getJSON("/json/today.json", function(data){ {% endif %}
+  var line1= {% if args.readings is defined %}{{ args.readings }}{% else %}[]{% endif %};
+  {% if args.readings is undefined %}
+  $.each(data.plotdata, function(key, val){
+    line1.push([val[0], val[1]])
+  });
+  {% endif %}
+  var dt = new Date(line1[0][0]);
+  var dd = dt.getDate();
+  var MM = dt.getMonth() + 1;
+  var yyyy = dt.getFullYear();
+  var fdt = dd + '/' + MM + '/' + yyyy;
+  var sdate = new Date();
+  var edate = new Date();
+  sdate = yyyy+'-'+MM+'-'+dd + ' 00:00:00';
+  edate = yyyy+'-'+MM+'-'+dd + ' 23:59:59';
+
+  var plot1 = $.jqplot('plot', [line1], {
+      title:'Indoor Temperature ' + fdt,
+
+      axes:{
+        xaxis:{
+          renderer:$.jqplot.DateAxisRenderer,
+          min: sdate,
+          max: edate,
+          tickInterval: '1 hour',
+          tickOptions:{
+            formatString:'%H:%M'
+          }
+        },
+        yaxis:{
+          tickOptions:{
+            formatString:'%.2f'
+            }
+        }
+      },
+
+      series:[{linewidth: 1, 
+               markerOptions:{size:0},
+               lineWidth: 1,
+               shadow: false,
+               rendererOptions: {smooth: true}
+               }],
+
+      highlighter: {
+        show: true,
+        sizeAdjust: 20.5
+      },
+      cursor: {
+        show: true,
+        zoom: true
+      }
+  });
+{% if args.readings is undefined %} }); {% endif %}
+});
+</script>
+
+
+{% endblock %}
+{% block body %}
+<div id="datecontrol">
+<form action="." method="POST">
+<input type="text" id="datepicker" name="dateselected"/>
+<input type="submit" name="dform" value="Plot">
+</form>
+</div>
+<div id="plot">
+</div>
+today
+{% endblock %}
