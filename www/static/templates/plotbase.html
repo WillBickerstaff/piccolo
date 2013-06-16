@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>{% if title %}{{ title }} | {% endif %}P.I.M.M.S</title>
+<title>{% if title %}{{ title }} | {% endif %}Pi.M.M.S</title>
 {% block meta %}{% endblock %}
 {% block stylesheets %}
 <link rel="stylesheet" type="text/css" href="/css/base.css">
@@ -34,7 +34,7 @@ $(function() {
 <div id="datecontrol">
   <form action="." method="POST">
     <input type="text" id="datepicker" name="dateselected"/>
-    <input type="submit" name="dform" value="Plot">
+    <input type="submit" name="dform" value="View Selected Date">
   </form>
 </div>
 
@@ -42,6 +42,7 @@ $(function() {
 </div>
 {% endblock %}
 <div id="footer">
+<span id="currentTemp"></span>
 {% block footer %}{% endblock %}
 <span id="gpl">
 <a href="http://www.gnu.org/licenses/gpl.html"><img src="/images/gplv3-88x31.png" height="31" width="88" alt="GPLv3"></a>

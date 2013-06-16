@@ -27,3 +27,7 @@ table, tr, td{
     float: right;
     margin-top: 1.3em;
 }
+
+#currentTemp{
+    float: left;
+}
