@@ -42,11 +42,14 @@ $(function() {
 <div id="plot">
 </div>
 {% endblock %}
-<div id="footer">
-<span id="currentTemp"></span>
-{% block footer %}{% endblock %}
-<span id="gpl">
+<div id="standardfooter">
+<div id="currentTemp"></div>
+<div id="pimmslogo"><a href="http://github.com/WillBickerstaff/PiMMS"><img src="/images/pimms.png" height="31" width="175"></a></div>
+<div id="gpl">
 <a href="http://www.gnu.org/licenses/gpl.html"><img src="/images/gplv3-88x31.png" height="31" width="88" alt="GPLv3"></a>
-</span>
+</div>
+<div id = "footer"
+{% block footer %}{% endblock %}
+</div>
 </body>
 </html>

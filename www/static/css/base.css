@@ -4,6 +4,10 @@ table, tr, td{
   padding: 0.2em 0.5em;
 }
 
+img {
+ border-style: none;
+}
+
 .ui-widget {
     font-family: Verdana,Arial,sans-serif;
     font-size: 0.7em;
@@ -17,17 +21,36 @@ table, tr, td{
     height: 90%;
 }
 
-#plot, #footer {
-    width: 98%;
+#standardfooter{
+  border-top: 1px solid black;
+}
+
+#plot, #standardfooter #footer{
+    width: 100%;
     margin-left:auto;
     margin-right:auto;
 }
 
+
+
 #gpl {
-    float: right;
+    float: left;
     margin-top: 1.3em;
+    margin-right:2%;
+    width: 33%;
+    text-align: right;
 }
 
 #currentTemp{
+    margin-top: 0.65em;
     float: left;
+    width: 33%;
+    text-align: left;
+}
+
+#pimmslogo{
+    margin-top: 1.3em;
+    float:left;
+    text-align: center;
+    width: 32%;
 }
