@@ -33,8 +33,9 @@ $(function() {
 {% block body %}
 <div id="datecontrol">
   <form action="." method="POST">
-    <input type="text" id="datepicker" name="dateselected"/>
-    <input type="submit" name="dform" value="View Selected Date">
+    <label for="datepicker">Select Date:</label>
+    <input type="text" id="datepicker" name="dateselected" size="10"/>
+    <input type="submit" name="dform" value="View" />
   </form>
 </div>
 
