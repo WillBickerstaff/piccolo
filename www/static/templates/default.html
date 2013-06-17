@@ -3,24 +3,19 @@
 <script>
 $(document).ready(function(){
   var line1= {{ args.readings }};
-  var dt = new Date(line1[0][0]);
+  var dt = new Date(line1[0][0].split(" ")[0].replace("-","/"));
   var dd = dt.getDate();
   var MM = dt.getMonth() + 1;
   var yyyy = dt.getFullYear();
-  var fdt = dd + '/' + MM + '/' + yyyy;
-  var sdate = new Date();
-  var edate = new Date();
-  sdate = yyyy+'-'+MM+'-'+dd + ' 00:00:00';
-  edate = yyyy+'-'+MM+'-'+dd + ' 23:59:59';
 
   var plot1 = $.jqplot('plot', [line1], {
-      title:'Indoor Temperature ' + fdt,
+      title:'Indoor Temperature ' + dd + '/' + MM + '/' + yyyy,
 
       axes:{
         xaxis:{
           renderer:$.jqplot.DateAxisRenderer,
-          min: sdate,
-          max: edate,
+          min: yyyy+'-'+MM+'-'+dd + ' 00:00:00',
+          max: yyyy+'-'+MM+'-'+dd + ' 23:59:59',
           tickInterval: '1 hour',
           label: 'Time (UTC)',
           tickOptions:{
