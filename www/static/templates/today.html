@@ -3,6 +3,7 @@
 <script>
 var plot1 = null;
 var replot;
+var lastday = null;
 
 function updateCurrent(val) {
   document.getElementById("currentTemp").innerHTML="<p>Current Temperature: "+val[1]+"&deg;C</p>";
@@ -21,12 +22,13 @@ function fetchAjaxData(url, success) {
 function createPlot() {
   var jsonurl = "/json/today.json";
   fetchAjaxData(jsonurl, function(data) {
-    if (plot1 == null) {
-      var dt = new Date(data.plotdata[0][0].split(" ")[0].replace("-","/"));
-      var dd = dt.getDate();
+    var dt = new Date(data.plotdata[0][0].split(" ")[0].replace("-","/"));
+    var dd = dt.getDate();
+      
+    if (plot1 == null || lastday != dd) {
       var MM = dt.getMonth() + 1;
       var yyyy = dt.getFullYear();
-      
+
       plot1 = $.jqplot('plot', [data.plotdata], {
       title:'Indoor Temperature ' + dd + '/' + MM + '/' + yyyy,
 
@@ -45,30 +47,31 @@ function createPlot() {
           tickOptions:{
             formatString:'%.2f'
             }
-        }
-      },
+          }
+        },
 
-      series:[{linewidth: 1, 
-               markerOptions:{size:0},
-               lineWidth: 1,
-               shadow: false,
-               rendererOptions: {smooth: true}
+        series:[{linewidth: 1, 
+                 markerOptions:{size:0},
+                 lineWidth: 1,
+                 shadow: false,
+                 rendererOptions: {smooth: true}
                }],
 
-      highlighter: {
-        show: true,
-        sizeAdjust: 20.5
-      },
-      cursor: {
-        show: true,
-        zoom: true
-      }
-    });
-  } else {
-    plot1.replot({data:[data.plotdata]});
-  };
-updateCurrent(data.plotdata[data.plotdata.length-1])
-});
+        highlighter: {
+          show: true,
+          sizeAdjust: 20.5
+        },
+        cursor: {
+          show: true,
+          zoom: true
+        }
+      });
+    } else {
+      plot1.replot({data:[data.plotdata]});
+    };
+  updateCurrent(data.plotdata[data.plotdata.length-1])
+  lastday = dd;
+  });
 }
 
 
