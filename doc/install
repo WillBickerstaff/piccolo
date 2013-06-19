@@ -85,14 +85,6 @@ At the sqlite prompt enter
 
 then exit with `.exit`
 
-* Install jqplot
-
-`
-cd /opt/pimms/PiMMS/www/static/js
-wget https://bitbucket.org/cleonello/jqplot/downloads/jquery.jqplot.1.0.8r1250.tar.gz
-tar -xzf jquery.jqplot.1.0.8r1250.tar.gz
-mv dist jqplot
-`
 # Start Nginx
 
 `sudo service start nginx`
