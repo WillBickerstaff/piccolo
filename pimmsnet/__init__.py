@@ -1,4 +1,4 @@
-import os, subprocess, re, time, sys
+import os, subprocess, re, time, sys, socket
 from threading import Thread
 
 class TestNet(Thread):
@@ -10,6 +10,7 @@ class TestNet(Thread):
         self.ip = ip
         self.status = -1
         self.mac = None
+        self.hostname = None
 
     def run(self):
         host = subprocess.Popen(["ping", "-q", "-c2", self.ip],
@@ -22,8 +23,24 @@ class TestNet(Thread):
             pid = subprocess.Popen(["arp", "-n", self.ip],
                                    stdout=subprocess.PIPE)
             s = pid.communicate()[0]
+            self.__setmac(s)
+            self.__tryhostname()
+
+    def __setmac(self, arpstr):
+        try:
             self.mac = re.search(r"(([a-f\d]{1,2}\:){5}[a-f\d]{1,2})",
-                                 s).groups()[0]
+                                 arpstr).groups()[0]
+        except AttributeError:
+            self.mac = None
+
+    def __tryhostname(self):
+        if hasattr(socket, 'setdefaulttimeout'):
+            socket.setdefaulttimeout(5)
+        try:
+            self.hostname = socket.gethostbyaddr(self.ip)
+        except socket.herror:
+            self.hostname = None
+
 def testloc():
     hostlist = []
     liveips = []
@@ -38,5 +55,5 @@ def testloc():
         if host.status == 2: liveips.append(host)
     
     for host in liveips:
-        print host.ip, host.mac
+        print host.ip, host.mac, host.hostname
 testloc()
