@@ -75,7 +75,8 @@ def render_page(template, template_args):
 
 def requested_plot(request):
     plotdate = datetime.date.fromtimestamp(dt.now())
-    if request.method == 'POST' and 'dateselected' in request.form:
+    if (request.method == 'POST' and 'dateselected' in request.form and
+        len(request.form['dateselected'].split('/')) == 3):
         pdate = time.strptime(request.form['dateselected'], '%m/%d/%Y')
         if dt.valid_date(pdate.tm_year, pdate.tm_mon, pdate.tm_mday):
             plotdate = datetime.date.fromtimestamp(time.mktime(pdate))
