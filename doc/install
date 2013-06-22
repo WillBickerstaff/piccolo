@@ -74,17 +74,6 @@ sudo chgrp pi /opt/pimms/PiMMS
 cd /opt/pimms
 git clone git://github.com/WillBickerstaff/PiMMS.git
 `
-
-* Create the sqlite database
-
-`sqlite3 /opt/pimms/PiMMS/templog.db`
-
-At the sqlite prompt enter
-
-`CREATE TABLE readings(timestamp decimal PRIMARY KEY NOT NULL, reading INT NOT NULL);`
-
-then exit with `.exit`
-
 # Start Nginx
 
 `sudo service start nginx`
