@@ -3,8 +3,9 @@
 <title>{% if title %}{{ title }} | {% endif %}Pi.M.M.S</title>
 {% block meta %}{% endblock %}
 {% block stylesheets %}
-<link rel="stylesheet" type="text/css" href="/css/base.css">
 <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+<link rel="stylesheet" type="text/css" href="/css/base.css">
+
 {% endblock %}
 {% block scripts %}
 <!--[if IE]><script language="javascript" type="text/javascript" src="/js/excanvas/excanvas.compiled.js"></script><![endif]-->
@@ -47,9 +48,6 @@ $(function() {
 <div id="pimmslogo"><a href="http://github.com/WillBickerstaff/PiMMS"><img src="/images/pimms.png" height="31" width="175"></a></div>
 <div id="gpl">
 <a href="http://www.gnu.org/licenses/gpl.html"><img src="/images/gplv3-88x31.png" height="31" width="88" alt="GPLv3"></a>
-</div>
-<div id = "footer"
-{% block footer %}{% endblock %}
 </div>
 </body>
 </html>

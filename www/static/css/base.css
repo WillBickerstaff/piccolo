@@ -18,17 +18,26 @@ img {
 }
 
 #plot{
-    height: 90%;
+    height: 85%;
 }
 
 #standardfooter{
+  margin-top: 1.5em;
   border-top: 1px solid black;
 }
 
-#plot, #standardfooter #footer{
+.jqplot-xaxis{
+  margin-top:1.2em;
+}
+
+#plot, #standardfooter{
     width: 100%;
     margin-left:auto;
     margin-right:auto;
+}
+
+#footer{
+    height:40px;
 }
 
 
