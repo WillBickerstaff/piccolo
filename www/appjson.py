@@ -37,10 +37,10 @@ class JSONTemps(object):
         if not self._sameday():
             self._empty()
         # Get all of todays readings so far if we currently have none
-        if len(self._curjson) == 0:
-            self._curjson = self._get_today()
+        if len(self._curjson['plotdata']) == 0:
+            self._curjson = {'plotdata':self._get_today()}
         # Now we can finally add the value to the json
-        self._curjson['plotdata'].append([dt.time2web(time), val])
+        self._curjson['plotdata'].append([int(time * 1000), val])
         self.__writejson()
 
     def _sameday(self):
@@ -50,7 +50,7 @@ class JSONTemps(object):
         if len(self._curjson) == 0: return
 
         today = dt.utc_now()
-        last = dt.utc(dt.web2time(self._curjson['plotdata'][-1][0]))
+        last = dt.utc(self._curjson['plotdata'][-1][0] / 1000.0)
         return (today.day == last.day and
                 today.month == last.month and
                 today.year == last.year)
@@ -76,12 +76,8 @@ class JSONTemps(object):
 
         returns a new list
         '''
-        jsonvals = []
-        for row in res:
-            tm = dt.time2web(row[0])
-            temp = row[1] / 1000.0
-            jsonvals.append([tm, temp])
-        return jsonvals
+        return [[int(r[0] * 1000), r[1] / 1000.0] for r in res]
+
     
     def __writejson(self):
         ''' Write the current json vals to the file '''

@@ -2,8 +2,8 @@
 {% block plotscript %}
 <script>
 $(document).ready(function(){
-  var line1= {{ args.readings }};
-  var dt = new Date(line1[0][0].split(" ")[0].replace("-","/"));
+  var line1 = {{ args.readings }};
+  var dt = new Date(line1[0][0]);
   var dd = dt.getDate();
   var MM = dt.getMonth() + 1;
   var yyyy = dt.getFullYear();
@@ -14,10 +14,9 @@ $(document).ready(function(){
       axes:{
         xaxis:{
           renderer:$.jqplot.DateAxisRenderer,
-          min: yyyy+'-'+MM+'-'+dd + ' 00:00:00',
-          max: yyyy+'-'+MM+'-'+dd + ' 23:59:59',
+          min: line1[0][0],
+          max: line1[0][0] + 86400000,
           tickInterval: '1 hour',
-          label: 'Time (UTC)',
           tickOptions:{
             formatString:'%H:%M'
           }

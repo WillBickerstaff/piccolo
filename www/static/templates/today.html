@@ -22,7 +22,7 @@ function fetchAjaxData(url, success) {
 function createPlot() {
   var jsonurl = "/json/today.json";
   fetchAjaxData(jsonurl, function(data) {
-    var dt = new Date(data.plotdata[0][0].split(" ")[0].replace("-","/"));
+    var dt = new Date(data.plotdata[0][0]);
     var dd = dt.getDate();
       
     if (plot1 == null || lastday != dd) {
@@ -35,10 +35,9 @@ function createPlot() {
       axes:{
         xaxis:{
           renderer:$.jqplot.DateAxisRenderer,
-          min: yyyy+'-'+MM+'-'+dd + ' 00:00:00',
-          max: yyyy+'-'+MM+'-'+dd + ' 23:59:59',
+          min: data.plotdata[0][0],
+          max: data.plotdata[0][0] + 86400000,
           tickInterval: '1 hour',
-          label: 'Time (UTC)',
           tickOptions:{
             formatString:'%H:%M'
           }

@@ -19,12 +19,11 @@ This file is part of Pi.M.M.S.
 """
 
 import sqlite3 as sqlite
-import datetime
-import time
-import os
+import datetime, time, os, json
 from collections import namedtuple
 from flask import Flask, request
 from jinja2 import Environment, FileSystemLoader
+from www.appjson import JSONTemps
 import datefuncs.dt as dt
 
 templatedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'templates')
@@ -93,9 +92,8 @@ def doplot(plotdate):
     template = 'today.html'
     if not dt.is_today(plotdate):
         template = 'default.html'
-        temps = [[dt.time2web(r[0]), 
-                  float(r[1])/1000] for r in get_readings(day)]
-        template_args["readings"] = temps
+        temps = JSONTemps.dbval2json(get_readings(day))
+        template_args["readings"] = json.dumps(temps)
 
     return template, template_args
 
