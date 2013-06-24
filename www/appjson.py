@@ -1,7 +1,7 @@
 import os, json
 import sqlite3 as sqlite
 import datefuncs.dt as dt
-from miscfuncs import check_file
+from util import check_file
 
 class JSONTemps(object):
     

@@ -3,7 +3,7 @@
 import os, sys, subprocess, signal
 from optparse import OptionParser
 import monitor
-from miscfuncs import check_file
+from util import check_file
 
 
 parser = OptionParser()
