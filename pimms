@@ -1,6 +1,7 @@
 #!/opt/pimms/bin/python
 
 import os, sys, subprocess, signal
+import sqlite3 as sqlite
 from optparse import OptionParser
 import monitor
 from util import check_file
@@ -22,6 +23,23 @@ def int_handler(signal, frame):
     print 'Exiting'
     sys.exit(0)
 
+def createdbstruct():
+    with sqlite.connect(os.environ['PIMMS_DB']) as con:
+        cur = con.cursor()
+        cur.execute("CREATE TABLE readings(timestamp decimal PRIMARY KEY NOT NULL, reading int NOT NULL);")
+        cur.execute("CREATE TABLE sys(key tinytext PRIMARY KEY NOT NULL, val tinytext NOT NULL);")
+        cur.execute("INSERT INTO sys VALUES('dbver', '1.0');")
+        cur.execute("CREATE TABLE user(username text NOT NULL PRIMARY KEY, passhash text NOT NULL, salt text NOT NULL, email text);")
+
+def initdb(db):
+    dbstat = check_file(db)
+
+    # Must set this so as gunicorn dynamic pages no where the db is
+    os.environ['PIMMS_DB'] = os.path.abspath(db)
+
+    if dbstat == 1: return
+    
+    createdbstruct()
 
 signal.signal(signal.SIGINT, int_handler)
 
@@ -29,9 +47,7 @@ signal.signal(signal.SIGINT, int_handler)
 if __name__=='__main__':
     try:
         (options, args) = parser.parse_args()
-        check_file(options.db)
-        # Must set this so as gunicorn dynamic pages no where the db is
-        os.environ['PIMMS_DB'] = os.path.abspath(options.db)
+        initdb(options.db)
         print 'Starting Monitor...'
         subprocess.Popen(['python', 'monitor.py',
                           '-i', options.logint,

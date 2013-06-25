@@ -1,1 +1,0 @@
-CREATE TABLE readings(timestamp decimal PRIMARY KEY NOT NULL, reading INT NOT NULL);
